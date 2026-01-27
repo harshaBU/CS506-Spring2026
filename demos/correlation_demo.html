@@ -263,6 +263,155 @@
             font-family: monospace;
             font-size: 0.9em;
         }
+        
+        .interactive-three-point {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #e74c3c;
+        }
+        
+        .interactive-three-point h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            text-align: center;
+        }
+        
+        .interactive-container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+        
+        .interactive-plot-container {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .interactive-plot {
+            width: 100%;
+            height: 400px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            position: relative;
+            background: #fafafa;
+        }
+        
+        .interactive-plot svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .draggable-point {
+            cursor: move;
+            transition: r 0.1s;
+        }
+        
+        .draggable-point:hover {
+            r: 8;
+        }
+        
+        .diagonal-line {
+            stroke: #95a5a6;
+            stroke-width: 1;
+            stroke-dasharray: 5,5;
+            opacity: 0.5;
+        }
+        
+        .correlation-panel {
+            flex: 0 0 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .correlation-panel h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .correlation-display {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .correlation-value-large {
+            font-size: 3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+        
+        .correlation-strength-display {
+            font-size: 1.2em;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .point-info {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .point-info strong {
+            color: #2c3e50;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .action-button {
+            flex: 1;
+            padding: 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .action-button:hover {
+            background: #2980b9;
+        }
+        
+        .action-button.reset {
+            background: #e74c3c;
+        }
+        
+        .action-button.reset:hover {
+            background: #c0392b;
+        }
+        
+        .instructions {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #2c3e50;
+        }
+        
+        .instructions ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
     </style>
 </head>
 <body>
@@ -288,54 +437,80 @@
                 </div>
             </div>
             
-            <!-- Three Point Visual Demo -->
-            <div class="three-point-demo">
-                <h3>Visual Example: How Correlation is Calculated</h3>
-                <div class="three-points-container">
-                    <div class="three-point-plot" id="negativePlot">
-                        <div class="point" style="left: 25%; top: 75%;"></div>
-                        <div class="point" style="left: 50%; top: 50%;"></div>
-                        <div class="point" style="left: 75%; top: 25%;"></div>
-                        <div class="point-label" style="left: 25%; top: 70%;">-+</div>
-                        <div class="point-label" style="left: 50%; top: 45%;">00</div>
-                        <div class="point-label" style="left: 75%; top: 20%;">+-</div>
-                        <div class="mean-line horizontal" style="top: 50%;"></div>
-                        <div class="mean-line vertical" style="left: 50%;"></div>
-                        <div style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 0.8em; color: #666;">Negative (r = -1.0)</div>
+            <!-- Interactive Three Point Demo -->
+            <div class="interactive-three-point">
+                <h2>Interactive Three-Point Correlation Explorer</h2>
+                <div class="interactive-container">
+                    <div class="interactive-plot-container">
+                        <div class="interactive-plot" id="interactivePlot">
+                            <svg id="plotSvg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+                                <!-- Grid lines -->
+                                <defs>
+                                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ddd" stroke-width="0.5"/>
+                                    </pattern>
+                                </defs>
+                                <rect width="100%" height="100%" fill="url(#grid)" />
+                                
+                                <!-- Axes -->
+                                <line x1="40" y1="360" x2="360" y2="360" stroke="#2c3e50" stroke-width="2"/>
+                                <line x1="40" y1="360" x2="40" y2="40" stroke="#2c3e50" stroke-width="2"/>
+                                
+                                <!-- Axis labels -->
+                                <text x="200" y="390" text-anchor="middle" font-size="14" fill="#2c3e50">X</text>
+                                <text x="15" y="200" text-anchor="middle" font-size="14" fill="#2c3e50" transform="rotate(-90 15 200)">Y</text>
+                                
+                                <!-- Diagonal line y=x -->
+                                <line id="diagonalLine" x1="40" y1="360" x2="360" y2="40" class="diagonal-line"/>
+                                
+                                <!-- Points -->
+                                <circle id="point0" class="draggable-point" cx="80" cy="320" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                                <circle id="point1" class="draggable-point" cx="200" cy="200" r="6" fill="#3498db" stroke="#fff" stroke-width="2"/>
+                                <circle id="point2" class="draggable-point" cx="320" cy="80" r="6" fill="#27ae60" stroke="#fff" stroke-width="2"/>
+                                
+                                <!-- Point labels -->
+                                <text id="label0" x="80" y="310" text-anchor="middle" font-size="12" fill="#2c3e50" font-weight="bold">P1</text>
+                                <text id="label1" x="200" y="190" text-anchor="middle" font-size="12" fill="#2c3e50" font-weight="bold">P2</text>
+                                <text id="label2" x="320" y="70" text-anchor="middle" font-size="12" fill="#2c3e50" font-weight="bold">P3</text>
+                            </svg>
+                        </div>
+                        <div class="button-group">
+                            <button class="action-button" onclick="snapToDiagonal()">Snap to y=x Line</button>
+                            <button class="action-button reset" onclick="resetPoints()">Reset</button>
+                        </div>
                     </div>
-                    <div class="three-point-plot" id="positivePlot">
-                        <div class="point" style="left: 25%; top: 25%;"></div>
-                        <div class="point" style="left: 50%; top: 50%;"></div>
-                        <div class="point" style="left: 75%; top: 75%;"></div>
-                        <div class="point-label" style="left: 25%; top: 20%;">--</div>
-                        <div class="point-label" style="left: 50%; top: 45%;">00</div>
-                        <div class="point-label" style="left: 75%; top: 70%;">++</div>
-                        <div class="mean-line horizontal" style="top: 50%;"></div>
-                        <div class="mean-line vertical" style="left: 50%;"></div>
-                        <div style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 0.8em; color: #666;">Positive (r = +1.0)</div>
+                    
+                    <div class="correlation-panel">
+                        <h3>Correlation Impact</h3>
+                        <div class="correlation-display">
+                            <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">Correlation Coefficient</div>
+                            <div id="correlationValue" class="correlation-value-large">1.000</div>
+                            <div id="correlationStrength" class="correlation-strength-display strength-strong">Perfect Positive</div>
+                        </div>
+                        
+                        <div class="point-info">
+                            <strong>Point 1 (Red):</strong><br>
+                            <span id="point0Coords">(0.00, 0.00)</span>
+                        </div>
+                        <div class="point-info">
+                            <strong>Point 2 (Blue):</strong><br>
+                            <span id="point1Coords">(1.00, 1.00)</span>
+                        </div>
+                        <div class="point-info">
+                            <strong>Point 3 (Green):</strong><br>
+                            <span id="point2Coords">(2.00, 2.00)</span>
+                        </div>
+                        
+                        <div class="instructions">
+                            <strong>Instructions:</strong>
+                            <ul>
+                                <li>Drag any point to explore correlation</li>
+                                <li>Points move in 0.01 increments</li>
+                                <li>Watch correlation change in real-time</li>
+                                <li>Use "Snap to y=x" to align points</li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="three-point-plot" id="mixedPlot">
-                        <div class="point" style="left: 10%; top: 25%;"></div>
-                        <div class="point" style="left: 30%; top: 45%;"></div>
-                        <div class="point" style="left: 50%; top: 50%;"></div>
-                        <div class="point" style="left: 70%; top: 45%;"></div>
-                        <div class="point" style="left: 90%; top: 25%;"></div>
-                        <div class="point-label" style="left: 10%; top: 20%;">-+</div>
-                        <div class="point-label" style="left: 30%; top: 40%;">-+</div>
-                        <div class="point-label" style="left: 50%; top: 45%;">00</div>
-                        <div class="point-label" style="left: 70%; top: 40%;">++</div>
-                        <div class="point-label" style="left: 90%; top: 20%;">++</div>
-                        <div class="mean-line horizontal" style="top: 38%;"></div>
-                        <div class="mean-line vertical" style="left: 50%;"></div>
-                        <div style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 0.8em; color: #666;">Quadratic (r = 0.0)</div>
-                    </div>
-                </div>
-                
-                <div class="calculation-details">
-                    <h4>Step-by-Step Calculation:</h4>
-                    <div class="calculation-step"><strong>Dataset 1 (Negative):</strong> (-1,1), (0,0), (1,-1) → Mean = (0,0) → r = -1.0</div>
-                    <div class="calculation-step"><strong>Dataset 2 (Positive):</strong> (-1,-1), (0,0), (1,1) → Mean = (0,0) → r = +1.0</div>
-                    <div class="calculation-step"><strong>Dataset 3 (Quadratic):</strong> (-2,1), (-1,2), (0,2.5), (1,2), (2,1) → Mean = (0,1.7) → r = 0.0</div>
                 </div>
             </div>
             
@@ -400,6 +575,246 @@
 
     <script>
         let linearChart, categoricalChart;
+        
+        // Interactive three-point correlation demo
+        let points = [
+            { x: 0, y: 0, element: null },
+            { x: 1, y: 1, element: null },
+            { x: 2, y: 2, element: null }
+        ];
+        
+        let draggingPoint = null;
+        let dragOffset = { x: 0, y: 0 };
+        
+        // SVG coordinate system: viewBox is 0-400, but we map 0-3 for data
+        const SVG_WIDTH = 400;
+        const SVG_HEIGHT = 400;
+        const PADDING = 40;
+        const PLOT_WIDTH = SVG_WIDTH - 2 * PADDING;
+        const PLOT_HEIGHT = SVG_HEIGHT - 2 * PADDING;
+        const DATA_MIN = 0;
+        const DATA_MAX = 2.5; // Allow some room beyond (2,2) for dragging
+        
+        function dataToSvgX(x) {
+            return PADDING + ((x - DATA_MIN) / (DATA_MAX - DATA_MIN)) * PLOT_WIDTH;
+        }
+        
+        function dataToSvgY(y) {
+            return PADDING + PLOT_HEIGHT - ((y - DATA_MIN) / (DATA_MAX - DATA_MIN)) * PLOT_HEIGHT;
+        }
+        
+        function svgToDataX(svgX) {
+            return DATA_MIN + ((svgX - PADDING) / PLOT_WIDTH) * (DATA_MAX - DATA_MIN);
+        }
+        
+        function svgToDataY(svgY) {
+            return DATA_MIN + ((PLOT_HEIGHT - (svgY - PADDING)) / PLOT_HEIGHT) * (DATA_MAX - DATA_MIN);
+        }
+        
+        function roundToStep(value, step) {
+            return Math.round(value / step) * step;
+        }
+        
+        function calculateCorrelation() {
+            const x = points.map(p => p.x);
+            const y = points.map(p => p.y);
+            
+            const n = points.length;
+            const xMean = x.reduce((sum, val) => sum + val, 0) / n;
+            const yMean = y.reduce((sum, val) => sum + val, 0) / n;
+            
+            let numerator = 0;
+            let xVariance = 0;
+            let yVariance = 0;
+            
+            for (let i = 0; i < n; i++) {
+                const xDiff = x[i] - xMean;
+                const yDiff = y[i] - yMean;
+                numerator += xDiff * yDiff;
+                xVariance += xDiff * xDiff;
+                yVariance += yDiff * yDiff;
+            }
+            
+            const denominator = Math.sqrt(xVariance * yVariance);
+            const correlation = denominator === 0 ? 0 : numerator / denominator;
+            
+            return isNaN(correlation) ? 0 : correlation;
+        }
+        
+        function updateCorrelationDisplay() {
+            const correlation = calculateCorrelation();
+            const correlationEl = document.getElementById('correlationValue');
+            const strengthEl = document.getElementById('correlationStrength');
+            
+            correlationEl.textContent = correlation.toFixed(3);
+            
+            const absCorr = Math.abs(correlation);
+            let strengthText, strengthClass;
+            
+            if (absCorr >= 0.99) {
+                strengthText = correlation > 0 ? 'Perfect Positive' : 'Perfect Negative';
+                strengthClass = 'strength-strong';
+            } else if (absCorr >= 0.7) {
+                strengthText = correlation > 0 ? 'Strong Positive' : 'Strong Negative';
+                strengthClass = 'strength-strong';
+            } else if (absCorr >= 0.5) {
+                strengthText = correlation > 0 ? 'Moderate Positive' : 'Moderate Negative';
+                strengthClass = 'strength-moderate';
+            } else if (absCorr >= 0.3) {
+                strengthText = correlation > 0 ? 'Weak Positive' : 'Weak Negative';
+                strengthClass = 'strength-weak';
+            } else {
+                strengthText = 'Very Weak / No Correlation';
+                strengthClass = 'strength-weak';
+            }
+            
+            strengthEl.textContent = strengthText;
+            strengthEl.className = `correlation-strength-display ${strengthClass}`;
+        }
+        
+        function updatePointDisplay() {
+            document.getElementById('point0Coords').textContent = `(${points[0].x.toFixed(2)}, ${points[0].y.toFixed(2)})`;
+            document.getElementById('point1Coords').textContent = `(${points[1].x.toFixed(2)}, ${points[1].y.toFixed(2)})`;
+            document.getElementById('point2Coords').textContent = `(${points[2].x.toFixed(2)}, ${points[2].y.toFixed(2)})`;
+        }
+        
+        function updatePointPosition(index) {
+            const point = points[index];
+            const svgX = dataToSvgX(point.x);
+            const svgY = dataToSvgY(point.y);
+            
+            point.element.setAttribute('cx', svgX);
+            point.element.setAttribute('cy', svgY);
+            
+            const label = document.getElementById(`label${index}`);
+            label.setAttribute('x', svgX);
+            label.setAttribute('y', svgY - 15);
+        }
+        
+        function initInteractivePlot() {
+            const svg = document.getElementById('plotSvg');
+            
+            // Initialize point elements
+            points[0].element = document.getElementById('point0');
+            points[1].element = document.getElementById('point1');
+            points[2].element = document.getElementById('point2');
+            
+            // Set initial positions
+            points.forEach((point, index) => {
+                updatePointPosition(index);
+            });
+            
+            // Add event listeners for dragging
+            points.forEach((point, index) => {
+                point.element.addEventListener('mousedown', (e) => startDrag(e, index));
+            });
+            
+            document.addEventListener('mousemove', handleDrag);
+            document.addEventListener('mouseup', endDrag);
+            
+            // Touch events for mobile
+            points.forEach((point, index) => {
+                point.element.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const rect = svg.getBoundingClientRect();
+                    const svgX = touch.clientX - rect.left;
+                    const svgY = touch.clientY - rect.top;
+                    startDrag({ clientX: touch.clientX, clientY: touch.clientY }, index, svgX, svgY);
+                });
+            });
+            
+            document.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                handleDrag(e.touches[0]);
+            });
+            
+            document.addEventListener('touchend', endDrag);
+            
+            updateCorrelationDisplay();
+            updatePointDisplay();
+        }
+        
+        function startDrag(e, index, svgX = null, svgY = null) {
+            draggingPoint = index;
+            const svg = document.getElementById('plotSvg');
+            const rect = svg.getBoundingClientRect();
+            
+            if (svgX === null || svgY === null) {
+                svgX = e.clientX - rect.left;
+                svgY = e.clientY - rect.top;
+            }
+            
+            const point = points[index];
+            const currentSvgX = dataToSvgX(point.x);
+            const currentSvgY = dataToSvgY(point.y);
+            
+            dragOffset.x = svgX - currentSvgX;
+            dragOffset.y = svgY - currentSvgY;
+        }
+        
+        function handleDrag(e) {
+            if (draggingPoint === null) return;
+            
+            const svg = document.getElementById('plotSvg');
+            const rect = svg.getBoundingClientRect();
+            const svgX = (e.clientX || e.touches?.[0]?.clientX || 0) - rect.left;
+            const svgY = (e.clientY || e.touches?.[0]?.clientY || 0) - rect.top;
+            
+            const adjustedX = svgX - dragOffset.x;
+            const adjustedY = svgY - dragOffset.y;
+            
+            // Convert to data coordinates
+            let newX = svgToDataX(adjustedX);
+            let newY = svgToDataY(adjustedY);
+            
+            // Round to 0.01 increments
+            newX = roundToStep(newX, 0.01);
+            newY = roundToStep(newY, 0.01);
+            
+            // Clamp to valid range
+            newX = Math.max(DATA_MIN, Math.min(DATA_MAX, newX));
+            newY = Math.max(DATA_MIN, Math.min(DATA_MAX, newY));
+            
+            // Update point
+            const point = points[draggingPoint];
+            point.x = newX;
+            point.y = newY;
+            
+            updatePointPosition(draggingPoint);
+            updateCorrelationDisplay();
+            updatePointDisplay();
+        }
+        
+        function endDrag() {
+            draggingPoint = null;
+        }
+        
+        function snapToDiagonal() {
+            // Snap each point to y=x line
+            points.forEach((point, index) => {
+                // Calculate average of x and y, then set both to that value
+                const avg = (point.x + point.y) / 2;
+                const snapped = roundToStep(avg, 0.01);
+                point.x = snapped;
+                point.y = snapped;
+                updatePointPosition(index);
+            });
+            updateCorrelationDisplay();
+            updatePointDisplay();
+        }
+        
+        function resetPoints() {
+            points[0] = { x: 0, y: 0, element: points[0].element };
+            points[1] = { x: 1, y: 1, element: points[1].element };
+            points[2] = { x: 2, y: 2, element: points[2].element };
+            
+            points.forEach((point, index) => {
+                updatePointPosition(index);
+            });
+            updateCorrelationDisplay();
+            updatePointDisplay();
+        }
         
         function generateLinearData(correlation, n = 100) {
             const data = [];
@@ -735,6 +1150,7 @@
         
         // Initialize everything when page loads
         window.addEventListener('load', function() {
+            initInteractivePlot();
             initLinearChart();
             initCategoricalChart();
             
